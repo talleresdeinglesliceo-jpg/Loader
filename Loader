@@ -19,6 +19,10 @@ local DISCORD_INVITE = "https://discord.gg/AR9qSf86X"
 -- Pega aquí el Asset ID de la imagen de fondo una vez que la subas a Roblox (ej: "rbxassetid://1234567890")
 local BACKGROUND_IMAGE_ID = ""
 
+local function ExecutePcVirtual()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/talleresdeinglesliceo-jpg/Heaven/refs/heads/main/Pc-Virtual"))()
+end
+
 local GamesDatabase = {
 	-- MM2 (Murder Mystery 2)
 	[142823291] = {
@@ -35,6 +39,15 @@ local GamesDatabase = {
 			loadstring(game:HttpGet("https://raw.githubusercontent.com/talleresdeinglesliceo-jpg/5v5/refs/heads/main/Heaven"))()
 		end
 	},
+
+	-- Duelos MVS (Murderers vs Sheriffs Duels - Reemplaza 111111111 por su PlaceId o GameId si deseas forzarlo)
+	[111111111] = {
+		Name = "Duelos MVS",
+		RequiresConfirm = true,
+		ConfirmTitle = "PC-VIRTUAL",
+		ConfirmQuestion = "¿Quieres ejecutar el script PC-VIRTUAL?",
+		Execute = ExecutePcVirtual
+	},
 }
 
 local FallbackByName = {
@@ -42,6 +55,9 @@ local FallbackByName = {
 	["mm2"] = GamesDatabase[142823291],
 	["entrenador 5v5"] = GamesDatabase[000000000],
 	["5v5"] = GamesDatabase[000000000],
+	["duelos mvs"] = GamesDatabase[111111111],
+	["murderers vs sheriffs"] = GamesDatabase[111111111],
+	["mvs"] = GamesDatabase[111111111],
 }
 
 local CurrentPlaceId = game.PlaceId
@@ -193,7 +209,6 @@ local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 18)
 MainCorner.Parent = MainFrame
 
--- Imagen de fondo (Spider-Man negro/gris)
 local BgImage = Instance.new("ImageLabel")
 BgImage.Name = "BackgroundImage"
 BgImage.Size = UDim2.new(1, 0, 1, 0)
@@ -205,7 +220,6 @@ BgImage.ScaleType = Enum.ScaleType.Crop
 BgImage.ZIndex = 0
 BgImage.Parent = MainFrame
 
--- Capa oscura semitransparente para mantener la lectura clara sobre el fondo
 local BgOverlay = Instance.new("Frame")
 BgOverlay.Name = "BackgroundOverlay"
 BgOverlay.Size = UDim2.new(1, 0, 1, 0)
@@ -221,7 +235,6 @@ MainStroke.Thickness = 2.5
 MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 MainStroke.Parent = MainFrame
 
--- Encabezado: FAMILY HUD + subtítulo
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Name = "Title"
 TitleLabel.Size = UDim2.new(1, -80, 0, 28)
@@ -248,7 +261,6 @@ SubTitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 SubTitleLabel.ZIndex = 2
 SubTitleLabel.Parent = MainFrame
 
--- Botón Cerrar (X) redondeado
 local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseBtn"
 CloseButton.Size = UDim2.new(0, 28, 0, 28)
@@ -270,7 +282,7 @@ CloseButton.MouseButton1Click:Connect(function()
 	ScreenGui:Destroy()
 end)
 
--- Panel Izquierdo (Pestañas DEVELOPERS / CAMBIOS RECIENTES)
+-- Panel Izquierdo
 local LeftPanel = Instance.new("Frame")
 LeftPanel.Name = "LeftPanel"
 LeftPanel.Size = UDim2.new(0, 275, 0, 185)
@@ -290,7 +302,6 @@ LeftStroke.Thickness = 1.6
 LeftStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 LeftStroke.Parent = LeftPanel
 
--- Pestaña DEVELOPERS
 local DevTabBtn = Instance.new("TextButton")
 DevTabBtn.Size = UDim2.new(0, 115, 0, 24)
 DevTabBtn.Position = UDim2.new(0, 14, 0, 10)
@@ -303,7 +314,6 @@ DevTabBtn.TextXAlignment = Enum.TextXAlignment.Left
 DevTabBtn.ZIndex = 3
 DevTabBtn.Parent = LeftPanel
 
--- Pestaña CAMBIOS RECIENTES
 local ChangelogTabBtn = Instance.new("TextButton")
 ChangelogTabBtn.Size = UDim2.new(0, 125, 0, 24)
 ChangelogTabBtn.Position = UDim2.new(0, 132, 0, 10)
@@ -316,7 +326,6 @@ ChangelogTabBtn.TextXAlignment = Enum.TextXAlignment.Left
 ChangelogTabBtn.ZIndex = 3
 ChangelogTabBtn.Parent = LeftPanel
 
--- Contenedor de DEVELOPERS (solo heaven)
 local DevContainer = Instance.new("Frame")
 DevContainer.Size = UDim2.new(1, -24, 1, -44)
 DevContainer.Position = UDim2.new(0, 12, 0, 38)
@@ -390,7 +399,6 @@ DevRoleLabel.TextXAlignment = Enum.TextXAlignment.Left
 DevRoleLabel.ZIndex = 4
 DevRoleLabel.Parent = DevCard
 
--- Info de juego detectado debajo de la tarjeta en DEVELOPERS
 local DetectedInfoLabel = Instance.new("TextLabel")
 DetectedInfoLabel.Size = UDim2.new(1, 0, 0, 34)
 DetectedInfoLabel.Position = UDim2.new(0, 0, 1, -36)
@@ -411,7 +419,6 @@ else
 	DetectedInfoLabel.TextColor3 = Color3.fromRGB(245, 195, 95)
 end
 
--- Contenedor de CAMBIOS RECIENTES
 local ChangelogContainer = Instance.new("Frame")
 ChangelogContainer.Size = UDim2.new(1, -24, 1, -44)
 ChangelogContainer.Position = UDim2.new(0, 12, 0, 38)
@@ -423,7 +430,7 @@ ChangelogContainer.Parent = LeftPanel
 local ChangelogText = Instance.new("TextLabel")
 ChangelogText.Size = UDim2.new(1, 0, 1, 0)
 ChangelogText.BackgroundTransparency = 1
-ChangelogText.Text = "• Auto-detección de juego activada\n• Soporte configurado para MM2\n• Soporte configurado para Entrenador 5v5\n• Interfaz Family Hud por heaven"
+ChangelogText.Text = "• Soporte para Duelos MVS (PC-VIRTUAL)\n• Soporte configurado para MM2\n• Soporte configurado para Entrenador 5v5\n• Interfaz Family Hud por heaven"
 ChangelogText.TextColor3 = Color3.fromRGB(220, 224, 235)
 ChangelogText.Font = Enum.Font.GothamMedium
 ChangelogText.TextSize = 12
@@ -447,7 +454,7 @@ ChangelogTabBtn.MouseButton1Click:Connect(function()
 	DevTabBtn.TextColor3 = Color3.fromRGB(145, 150, 165)
 end)
 
--- Columna Derecha: LINKS (Solo DISCORD.GG) y LAUNCH
+-- Columna Derecha: LINKS y LAUNCH
 local LinksTitle = Instance.new("TextLabel")
 LinksTitle.Name = "LinksTitle"
 LinksTitle.Size = UDim2.new(0, 165, 0, 16)
@@ -461,7 +468,6 @@ LinksTitle.TextXAlignment = Enum.TextXAlignment.Left
 LinksTitle.ZIndex = 2
 LinksTitle.Parent = MainFrame
 
--- Botón DISCORD.GG
 local DiscordButton = Instance.new("TextButton")
 DiscordButton.Name = "DiscordBtn"
 DiscordButton.Size = UDim2.new(0, 166, 0, 56)
@@ -502,7 +508,6 @@ DiscordButton.MouseButton1Click:Connect(function()
 	SendRayfieldNotification("Family Hud", "Discord copiado: " .. DISCORD_INVITE, 4)
 end)
 
--- Botón LAUNCH (Verde y redondeado)
 local LaunchNormalColor = Color3.fromRGB(32, 160, 82)
 local LaunchHoverColor = Color3.fromRGB(42, 192, 98)
 
@@ -537,7 +542,6 @@ LaunchButton.MouseLeave:Connect(function()
 	TweenService:Create(LaunchButton, TweenInfo.new(0.2), {BackgroundColor3 = LaunchNormalColor}):Play()
 end)
 
--- Pie de página
 local FooterLabel = Instance.new("TextLabel")
 FooterLabel.Size = UDim2.new(1, -44, 0, 16)
 FooterLabel.Position = UDim2.new(0, 22, 1, -24)
@@ -549,6 +553,142 @@ FooterLabel.TextSize = 10
 FooterLabel.TextXAlignment = Enum.TextXAlignment.Center
 FooterLabel.ZIndex = 2
 FooterLabel.Parent = MainFrame
+
+-- ==========================================
+-- INTERFAZ DE CONFIRMACIÓN (YES / NOT)
+-- ==========================================
+local ConfirmOverlay = Instance.new("Frame")
+ConfirmOverlay.Name = "ConfirmOverlay"
+ConfirmOverlay.Size = UDim2.new(1, 0, 1, 0)
+ConfirmOverlay.Position = UDim2.new(0, 0, 0, 0)
+ConfirmOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ConfirmOverlay.BackgroundTransparency = 0.55
+ConfirmOverlay.BorderSizePixel = 0
+ConfirmOverlay.Visible = false
+ConfirmOverlay.ZIndex = 10
+ConfirmOverlay.Parent = ScreenGui
+
+local ConfirmFrame = Instance.new("Frame")
+ConfirmFrame.Name = "ConfirmFrame"
+ConfirmFrame.Size = UDim2.new(0, 350, 0, 175)
+ConfirmFrame.Position = UDim2.new(0.5, -175, 0.5, -87)
+ConfirmFrame.BackgroundColor3 = Color3.fromRGB(16, 17, 23)
+ConfirmFrame.BorderSizePixel = 0
+ConfirmFrame.Active = true
+ConfirmFrame.Draggable = true
+ConfirmFrame.ZIndex = 11
+ConfirmFrame.Parent = ConfirmOverlay
+
+local ConfirmCorner = Instance.new("UICorner")
+ConfirmCorner.CornerRadius = UDim.new(0, 18)
+ConfirmCorner.Parent = ConfirmFrame
+
+local ConfirmStroke = Instance.new("UIStroke")
+ConfirmStroke.Thickness = 2.5
+ConfirmStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+ConfirmStroke.Parent = ConfirmFrame
+
+local ConfirmTitleLabel = Instance.new("TextLabel")
+ConfirmTitleLabel.Size = UDim2.new(1, -30, 0, 22)
+ConfirmTitleLabel.Position = UDim2.new(0, 15, 0, 14)
+ConfirmTitleLabel.BackgroundTransparency = 1
+ConfirmTitleLabel.Text = "PC-VIRTUAL"
+ConfirmTitleLabel.TextColor3 = Color3.fromRGB(165, 170, 185)
+ConfirmTitleLabel.Font = Enum.Font.GothamBold
+ConfirmTitleLabel.TextSize = 12
+ConfirmTitleLabel.TextXAlignment = Enum.TextXAlignment.Center
+ConfirmTitleLabel.ZIndex = 12
+ConfirmTitleLabel.Parent = ConfirmFrame
+
+local ConfirmQuestionLabel = Instance.new("TextLabel")
+ConfirmQuestionLabel.Size = UDim2.new(1, -28, 0, 52)
+ConfirmQuestionLabel.Position = UDim2.new(0, 14, 0, 40)
+ConfirmQuestionLabel.BackgroundTransparency = 1
+ConfirmQuestionLabel.Text = "¿Quieres ejecutar el script PC-VIRTUAL?"
+ConfirmQuestionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+ConfirmQuestionLabel.Font = Enum.Font.GothamBold
+ConfirmQuestionLabel.TextSize = 15
+ConfirmQuestionLabel.TextWrapped = true
+ConfirmQuestionLabel.TextXAlignment = Enum.TextXAlignment.Center
+ConfirmQuestionLabel.TextYAlignment = Enum.TextYAlignment.Center
+ConfirmQuestionLabel.ZIndex = 12
+ConfirmQuestionLabel.Parent = ConfirmFrame
+
+-- Botón YES
+local YesButton = Instance.new("TextButton")
+YesButton.Name = "YesBtn"
+YesButton.Size = UDim2.new(0, 145, 0, 44)
+YesButton.Position = UDim2.new(0, 20, 1, -62)
+YesButton.BackgroundColor3 = Color3.fromRGB(32, 160, 82)
+YesButton.Text = "YES"
+YesButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+YesButton.Font = Enum.Font.GothamBlack
+YesButton.TextSize = 15
+YesButton.AutoButtonColor = false
+YesButton.ZIndex = 12
+YesButton.Parent = ConfirmFrame
+
+local YesCorner = Instance.new("UICorner")
+YesCorner.CornerRadius = UDim.new(0, 14)
+YesCorner.Parent = YesButton
+
+local YesStroke = Instance.new("UIStroke")
+YesStroke.Thickness = 2
+YesStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+YesStroke.Parent = YesButton
+
+-- Botón NOT
+local NotButton = Instance.new("TextButton")
+NotButton.Name = "NotBtn"
+NotButton.Size = UDim2.new(0, 145, 0, 44)
+NotButton.Position = UDim2.new(1, -165, 1, -62)
+NotButton.BackgroundColor3 = Color3.fromRGB(165, 38, 48)
+NotButton.Text = "NOT"
+NotButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+NotButton.Font = Enum.Font.GothamBlack
+NotButton.TextSize = 15
+NotButton.AutoButtonColor = false
+NotButton.ZIndex = 12
+NotButton.Parent = ConfirmFrame
+
+local NotCorner = Instance.new("UICorner")
+NotCorner.CornerRadius = UDim.new(0, 14)
+NotCorner.Parent = NotButton
+
+local NotStroke = Instance.new("UIStroke")
+NotStroke.Thickness = 2
+NotStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+NotStroke.Parent = NotButton
+
+YesButton.MouseEnter:Connect(function()
+	TweenService:Create(YesButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(42, 192, 98)}):Play()
+end)
+YesButton.MouseLeave:Connect(function()
+	TweenService:Create(YesButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(32, 160, 82)}):Play()
+end)
+
+NotButton.MouseEnter:Connect(function()
+	TweenService:Create(NotButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(195, 48, 60)}):Play()
+end)
+NotButton.MouseLeave:Connect(function()
+	TweenService:Create(NotButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(165, 38, 48)}):Play()
+end)
+
+YesButton.MouseButton1Click:Connect(function()
+	ConfirmOverlay.Visible = false
+	LaunchButton.Text = "CARGANDO..."
+	task.wait(0.25)
+	if SelectedGameData and SelectedGameData.Execute then
+		SelectedGameData.Execute()
+	end
+	ScreenGui:Destroy()
+end)
+
+NotButton.MouseButton1Click:Connect(function()
+	ConfirmOverlay.Visible = false
+	LaunchButton.Text = "▶  LAUNCH"
+	SendRayfieldNotification("Family Hud", "Ejecución cancelada", 3)
+end)
 
 -- ==========================================
 -- ANIMACIÓN BORDES RAINBOW
@@ -565,6 +705,9 @@ RainbowConnection = RunService.RenderStepped:Connect(function(deltaTime)
 	LeftStroke.Color = Color3.fromHSV((hue + 0.1) % 1, 0.85, 1)
 	DiscordStroke.Color = Color3.fromHSV((hue + 0.2) % 1, 0.85, 1)
 	LaunchStroke.Color = Color3.fromHSV((hue + 0.35) % 1, 0.85, 1)
+	ConfirmStroke.Color = Color3.fromHSV((hue + 0.45) % 1, 0.85, 1)
+	YesStroke.Color = Color3.fromHSV((hue + 0.55) % 1, 0.85, 1)
+	NotStroke.Color = Color3.fromHSV((hue + 0.65) % 1, 0.85, 1)
 end)
 
 -- Notificación automática si el juego no está soportado
@@ -577,10 +720,16 @@ end
 -- Lógica al presionar LAUNCH
 LaunchButton.MouseButton1Click:Connect(function()
 	if SelectedGameData and SelectedGameData.Execute then
-		LaunchButton.Text = "CARGANDO..."
-		task.wait(0.3)
-		SelectedGameData.Execute()
-		ScreenGui:Destroy()
+		if SelectedGameData.RequiresConfirm then
+			ConfirmTitleLabel.Text = SelectedGameData.ConfirmTitle or SelectedGameData.Name
+			ConfirmQuestionLabel.Text = SelectedGameData.ConfirmQuestion or "¿Quieres ejecutar el script PC-VIRTUAL?"
+			ConfirmOverlay.Visible = true
+		else
+			LaunchButton.Text = "CARGANDO..."
+			task.wait(0.3)
+			SelectedGameData.Execute()
+			ScreenGui:Destroy()
+		end
 	else
 		SendRayfieldNotification("Family Hud", "not suport game", 4)
 		LaunchButton.Text = "NOT SUPORT GAME"
