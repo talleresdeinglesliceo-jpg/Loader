@@ -1,0 +1,349 @@
+-- Family Loader UI Base
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local MarketplaceService = game:GetService("MarketplaceService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Eliminar instancias previas si se vuelve a ejecutar
+if PlayerGui:FindFirstChild("FamilyLoaderUI") then
+	PlayerGui.FamilyLoaderUI:Destroy()
+end
+
+-- ==========================================
+-- CONFIGURACIÓN DE JUEGOS Y SCRIPTS
+-- ==========================================
+local GamesDatabase = {
+	-- MM2 (Murder Mystery 2)
+	[142823291] = {
+		Name = "MM2",
+		Execute = function()
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/talleresdeinglesliceo-jpg/Murders/refs/heads/main/Famyly"))()
+		end
+	},
+
+	-- Entrenador 5v5 (Reemplaza 000000000 por el PlaceId o GameId real si deseas forzarlo)
+	[000000000] = {
+		Name = "Entrenador 5v5",
+		Execute = function()
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/talleresdeinglesliceo-jpg/5v5/refs/heads/main/Heaven"))()
+		end
+	},
+}
+
+local FallbackByName = {
+	["murder mystery 2"] = GamesDatabase[142823291],
+	["mm2"] = GamesDatabase[142823291],
+	["entrenador 5v5"] = GamesDatabase[000000000],
+	["5v5"] = GamesDatabase[000000000],
+}
+
+local CurrentPlaceId = game.PlaceId
+local CurrentGameId = game.GameId
+local DetectedGameName = "Desconocido"
+local SelectedGameData = nil
+
+pcall(function()
+	local info = MarketplaceService:GetProductInfo(CurrentPlaceId)
+	if info and info.Name then
+		DetectedGameName = info.Name
+	end
+end)
+
+if GamesDatabase[CurrentPlaceId] then
+	SelectedGameData = GamesDatabase[CurrentPlaceId]
+elseif GamesDatabase[CurrentGameId] then
+	SelectedGameData = GamesDatabase[CurrentGameId]
+else
+	local lowerName = string.lower(DetectedGameName)
+	for keyword, data in pairs(FallbackByName) do
+		if string.find(lowerName, keyword, 1, true) then
+			SelectedGameData = data
+			break
+		end
+	end
+end
+
+-- ==========================================
+-- CREACIÓN DE LA INTERFAZ (UI)
+-- ==========================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "FamilyLoaderUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
+
+-- Contenedor de notificaciones tipo Rayfield (esquina inferior derecha)
+local NotifyHolder = Instance.new("Frame")
+NotifyHolder.Name = "NotifyHolder"
+NotifyHolder.Size = UDim2.new(0, 270, 1, -30)
+NotifyHolder.Position = UDim2.new(1, -285, 0, 15)
+NotifyHolder.BackgroundTransparency = 1
+NotifyHolder.Parent = ScreenGui
+
+local NotifyLayout = Instance.new("UIListLayout")
+NotifyLayout.Padding = UDim.new(0, 8)
+NotifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+NotifyLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+NotifyLayout.Parent = NotifyHolder
+
+-- Función de notificación estilo Rayfield con borde rainbow y esquinas redondas
+local function SendRayfieldNotification(titleText, contentText, duration)
+	duration = duration or 4
+
+	local NotifFrame = Instance.new("Frame")
+	NotifFrame.Size = UDim2.new(1, 0, 0, 74)
+	NotifFrame.Position = UDim2.new(1.2, 0, 0, 0)
+	NotifFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 27)
+	NotifFrame.BorderSizePixel = 0
+	NotifFrame.ClipsDescendants = true
+	NotifFrame.Parent = NotifyHolder
+
+	local NotifCorner = Instance.new("UICorner")
+	NotifCorner.CornerRadius = UDim.new(0, 14)
+	NotifCorner.Parent = NotifFrame
+
+	local NotifStroke = Instance.new("UIStroke")
+	NotifStroke.Thickness = 2
+	NotifStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	NotifStroke.Parent = NotifFrame
+
+	local NotifTitle = Instance.new("TextLabel")
+	NotifTitle.Size = UDim2.new(1, -18, 0, 22)
+	NotifTitle.Position = UDim2.new(0, 12, 0, 7)
+	NotifTitle.BackgroundTransparency = 1
+	NotifTitle.Text = titleText
+	NotifTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+	NotifTitle.Font = Enum.Font.GothamBold
+	NotifTitle.TextSize = 14
+	NotifTitle.TextXAlignment = Enum.TextXAlignment.Left
+	NotifTitle.Parent = NotifFrame
+
+	local NotifBody = Instance.new("TextLabel")
+	NotifBody.Size = UDim2.new(1, -18, 0, 26)
+	NotifBody.Position = UDim2.new(0, 12, 0, 29)
+	NotifBody.BackgroundTransparency = 1
+	NotifBody.Text = contentText
+	NotifBody.TextColor3 = Color3.fromRGB(215, 215, 225)
+	NotifBody.Font = Enum.Font.GothamMedium
+	NotifBody.TextSize = 13
+	NotifBody.TextXAlignment = Enum.TextXAlignment.Left
+	NotifBody.Parent = NotifFrame
+
+	local ProgressBg = Instance.new("Frame")
+	ProgressBg.Size = UDim2.new(1, 0, 0, 4)
+	ProgressBg.Position = UDim2.new(0, 0, 1, -4)
+	ProgressBg.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+	ProgressBg.BorderSizePixel = 0
+	ProgressBg.Parent = NotifFrame
+
+	local ProgressBar = Instance.new("Frame")
+	ProgressBar.Size = UDim2.new(1, 0, 1, 0)
+	ProgressBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	ProgressBar.BorderSizePixel = 0
+	ProgressBar.Parent = ProgressBg
+
+	local hue = 0
+	local conn = RunService.RenderStepped:Connect(function(dt)
+		if not NotifFrame or not NotifFrame.Parent then return end
+		hue = (hue + dt * 0.3) % 1
+		local c = Color3.fromHSV(hue, 0.85, 1)
+		NotifStroke.Color = c
+		ProgressBar.BackgroundColor3 = c
+	end)
+
+	TweenService:Create(NotifFrame, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		Position = UDim2.new(0, 0, 0, 0)
+	}):Play()
+
+	TweenService:Create(ProgressBar, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+		Size = UDim2.new(0, 0, 1, 0)
+	}):Play()
+
+	task.delay(duration, function()
+		if NotifFrame and NotifFrame.Parent then
+			local outTween = TweenService:Create(NotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+				Position = UDim2.new(1.2, 0, 0, 0)
+			})
+			outTween:Play()
+			outTween.Completed:Wait()
+			if conn then conn:Disconnect() end
+			NotifFrame:Destroy()
+		end
+	end)
+end
+
+-- Frame Principal
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 324, 0, 210)
+MainFrame.Position = UDim2.new(0.5, -162, 0.5, -105)
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 18)
+MainCorner.Parent = MainFrame
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Thickness = 2.5
+MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+MainStroke.Parent = MainFrame
+
+-- Título: FAMILY LOADER + pequeño by heaven
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Name = "Title"
+TitleLabel.Size = UDim2.new(1, -55, 0, 24)
+TitleLabel.Position = UDim2.new(0, 16, 0, 8)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "FAMILY LOADER"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextSize = 18
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = MainFrame
+
+local AuthorLabel = Instance.new("TextLabel")
+AuthorLabel.Name = "Author"
+AuthorLabel.Size = UDim2.new(1, -55, 0, 14)
+AuthorLabel.Position = UDim2.new(0, 17, 0, 30)
+AuthorLabel.BackgroundTransparency = 1
+AuthorLabel.Text = "by heaven"
+AuthorLabel.TextColor3 = Color3.fromRGB(165, 165, 180)
+AuthorLabel.Font = Enum.Font.GothamMedium
+AuthorLabel.TextSize = 10
+AuthorLabel.TextXAlignment = Enum.TextXAlignment.Left
+AuthorLabel.Parent = MainFrame
+
+-- Botón Cerrar (X) redondeado
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseBtn"
+CloseButton.Size = UDim2.new(0, 28, 0, 28)
+CloseButton.Position = UDim2.new(1, -40, 0, 12)
+CloseButton.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(235, 85, 85)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 14
+CloseButton.Parent = MainFrame
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(1, 0) -- Completamente redondo
+CloseCorner.Parent = CloseButton
+
+CloseButton.MouseButton1Click:Connect(function()
+	ScreenGui:Destroy()
+end)
+
+-- Contenedor de información del juego detectado
+local InfoFrame = Instance.new("Frame")
+InfoFrame.Name = "InfoFrame"
+InfoFrame.Size = UDim2.new(1, -30, 0, 76)
+InfoFrame.Position = UDim2.new(0, 15, 0, 54)
+InfoFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 33)
+InfoFrame.BorderSizePixel = 0
+InfoFrame.Parent = MainFrame
+
+local InfoCorner = Instance.new("UICorner")
+InfoCorner.CornerRadius = UDim.new(0, 14)
+InfoCorner.Parent = InfoFrame
+
+local GameLabel = Instance.new("TextLabel")
+GameLabel.Size = UDim2.new(1, -18, 0, 36)
+GameLabel.Position = UDim2.new(0, 10, 0, 7)
+GameLabel.BackgroundTransparency = 1
+GameLabel.Text = "Juego detectado:\n" .. DetectedGameName
+GameLabel.TextColor3 = Color3.fromRGB(210, 210, 220)
+GameLabel.Font = Enum.Font.GothamMedium
+GameLabel.TextSize = 12
+GameLabel.TextWrapped = true
+GameLabel.TextXAlignment = Enum.TextXAlignment.Left
+GameLabel.TextYAlignment = Enum.TextYAlignment.Top
+GameLabel.Parent = InfoFrame
+
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Size = UDim2.new(1, -18, 0, 20)
+StatusLabel.Position = UDim2.new(0, 10, 1, -25)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Font = Enum.Font.GothamBold
+StatusLabel.TextSize = 12
+StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+StatusLabel.Parent = InfoFrame
+
+if SelectedGameData then
+	StatusLabel.Text = "Estado: " .. SelectedGameData.Name .. " listo"
+	StatusLabel.TextColor3 = Color3.fromRGB(80, 230, 120)
+else
+	StatusLabel.Text = "Estado: Sin script asignado (ID: " .. tostring(CurrentPlaceId) .. ")"
+	StatusLabel.TextColor3 = Color3.fromRGB(240, 180, 70)
+end
+
+-- Botón LAUNCH verde con esquinas redondeadas y borde rainbow
+local LaunchNormalColor = Color3.fromRGB(34, 165, 85)
+local LaunchHoverColor = Color3.fromRGB(45, 195, 102)
+
+local LaunchButton = Instance.new("TextButton")
+LaunchButton.Name = "LaunchBtn"
+LaunchButton.Size = UDim2.new(1, -30, 0, 44)
+LaunchButton.Position = UDim2.new(0, 15, 1, -58)
+LaunchButton.BackgroundColor3 = LaunchNormalColor
+LaunchButton.Text = "LAUNCH"
+LaunchButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+LaunchButton.Font = Enum.Font.GothamBlack
+LaunchButton.TextSize = 16
+LaunchButton.AutoButtonColor = false
+LaunchButton.Parent = MainFrame
+
+local LaunchCorner = Instance.new("UICorner")
+LaunchCorner.CornerRadius = UDim.new(0, 14)
+LaunchCorner.Parent = LaunchButton
+
+local LaunchStroke = Instance.new("UIStroke")
+LaunchStroke.Thickness = 2
+LaunchStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+LaunchStroke.Parent = LaunchButton
+
+-- ==========================================
+-- ANIMACIÓN BORDES RAINBOW
+-- ==========================================
+local hue = 0
+local RainbowConnection
+RainbowConnection = RunService.RenderStepped:Connect(function(deltaTime)
+	if not ScreenGui or not ScreenGui.Parent then
+		RainbowConnection:Disconnect()
+		return
+	end
+	hue = (hue + deltaTime * 0.25) % 1
+	local mainColor = Color3.fromHSV(hue, 0.85, 1)
+	local buttonColor = Color3.fromHSV((hue + 0.15) % 1, 0.85, 1)
+
+	MainStroke.Color = mainColor
+	LaunchStroke.Color = buttonColor
+end)
+
+LaunchButton.MouseEnter:Connect(function()
+	TweenService:Create(LaunchButton, TweenInfo.new(0.2), {BackgroundColor3 = LaunchHoverColor}):Play()
+end)
+
+LaunchButton.MouseLeave:Connect(function()
+	TweenService:Create(LaunchButton, TweenInfo.new(0.2), {BackgroundColor3 = LaunchNormalColor}):Play()
+end)
+
+-- Lógica al presionar LAUNCH
+LaunchButton.MouseButton1Click:Connect(function()
+	if SelectedGameData and SelectedGameData.Execute then
+		LaunchButton.Text = "CARGANDO..."
+		task.wait(0.3)
+		SelectedGameData.Execute()
+		ScreenGui:Destroy()
+	else
+		SendRayfieldNotification("Family Loader", "not suport game", 4)
+		LaunchButton.Text = "NOT SUPORT GAME"
+		task.wait(1.2)
+		LaunchButton.Text = "LAUNCH"
+	end
+end)
