@@ -1,4 +1,4 @@
--- Family Loader UI Base
+-- Family Hud Loader
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -7,14 +7,18 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- Eliminar instancias previas si se vuelve a ejecutar
-if PlayerGui:FindFirstChild("FamilyLoaderUI") then
-	PlayerGui.FamilyLoaderUI:Destroy()
+if PlayerGui:FindFirstChild("FamilyHudUI") then
+	PlayerGui.FamilyHudUI:Destroy()
 end
 
 -- ==========================================
--- CONFIGURACIÓN DE JUEGOS Y SCRIPTS
+-- CONFIGURACIÓN DE JUEGOS, FONDO Y SCRIPTS
 -- ==========================================
+local DISCORD_INVITE = "https://discord.gg/AR9qSf86X"
+
+-- Pega aquí el Asset ID de la imagen de fondo una vez que la subas a Roblox (ej: "rbxassetid://1234567890")
+local BACKGROUND_IMAGE_ID = ""
+
 local GamesDatabase = {
 	-- MM2 (Murder Mystery 2)
 	[142823291] = {
@@ -70,15 +74,15 @@ end
 -- CREACIÓN DE LA INTERFAZ (UI)
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "FamilyLoaderUI"
+ScreenGui.Name = "FamilyHudUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
--- Contenedor de notificaciones tipo Rayfield (esquina inferior derecha)
+-- Contenedor de notificaciones tipo Rayfield
 local NotifyHolder = Instance.new("Frame")
 NotifyHolder.Name = "NotifyHolder"
-NotifyHolder.Size = UDim2.new(0, 270, 1, -30)
-NotifyHolder.Position = UDim2.new(1, -285, 0, 15)
+NotifyHolder.Size = UDim2.new(0, 275, 1, -30)
+NotifyHolder.Position = UDim2.new(1, -290, 0, 15)
 NotifyHolder.BackgroundTransparency = 1
 NotifyHolder.Parent = ScreenGui
 
@@ -88,14 +92,13 @@ NotifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
 NotifyLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 NotifyLayout.Parent = NotifyHolder
 
--- Función de notificación estilo Rayfield con borde rainbow y esquinas redondas
 local function SendRayfieldNotification(titleText, contentText, duration)
 	duration = duration or 4
 
 	local NotifFrame = Instance.new("Frame")
 	NotifFrame.Size = UDim2.new(1, 0, 0, 74)
 	NotifFrame.Position = UDim2.new(1.2, 0, 0, 0)
-	NotifFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 27)
+	NotifFrame.BackgroundColor3 = Color3.fromRGB(16, 17, 22)
 	NotifFrame.BorderSizePixel = 0
 	NotifFrame.ClipsDescendants = true
 	NotifFrame.Parent = NotifyHolder
@@ -125,7 +128,7 @@ local function SendRayfieldNotification(titleText, contentText, duration)
 	NotifBody.Position = UDim2.new(0, 12, 0, 29)
 	NotifBody.BackgroundTransparency = 1
 	NotifBody.Text = contentText
-	NotifBody.TextColor3 = Color3.fromRGB(215, 215, 225)
+	NotifBody.TextColor3 = Color3.fromRGB(215, 215, 228)
 	NotifBody.Font = Enum.Font.GothamMedium
 	NotifBody.TextSize = 13
 	NotifBody.TextXAlignment = Enum.TextXAlignment.Left
@@ -134,7 +137,7 @@ local function SendRayfieldNotification(titleText, contentText, duration)
 	local ProgressBg = Instance.new("Frame")
 	ProgressBg.Size = UDim2.new(1, 0, 0, 4)
 	ProgressBg.Position = UDim2.new(0, 0, 1, -4)
-	ProgressBg.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+	ProgressBg.BackgroundColor3 = Color3.fromRGB(32, 33, 42)
 	ProgressBg.BorderSizePixel = 0
 	ProgressBg.Parent = NotifFrame
 
@@ -174,13 +177,14 @@ local function SendRayfieldNotification(titleText, contentText, duration)
 	end)
 end
 
--- Frame Principal
+-- Ventana Principal (Estilo Launcher Horizontal)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 324, 0, 210)
-MainFrame.Position = UDim2.new(0.5, -162, 0.5, -105)
-MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+MainFrame.Size = UDim2.new(0, 500, 0, 295)
+MainFrame.Position = UDim2.new(0.5, -250, 0.5, -147)
+MainFrame.BackgroundColor3 = Color3.fromRGB(13, 14, 18)
 MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
@@ -189,113 +193,331 @@ local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 18)
 MainCorner.Parent = MainFrame
 
+-- Imagen de fondo (Spider-Man negro/gris)
+local BgImage = Instance.new("ImageLabel")
+BgImage.Name = "BackgroundImage"
+BgImage.Size = UDim2.new(1, 0, 1, 0)
+BgImage.Position = UDim2.new(0, 0, 0, 0)
+BgImage.BackgroundTransparency = 1
+BgImage.Image = BACKGROUND_IMAGE_ID
+BgImage.ImageTransparency = 0.25
+BgImage.ScaleType = Enum.ScaleType.Crop
+BgImage.ZIndex = 0
+BgImage.Parent = MainFrame
+
+-- Capa oscura semitransparente para mantener la lectura clara sobre el fondo
+local BgOverlay = Instance.new("Frame")
+BgOverlay.Name = "BackgroundOverlay"
+BgOverlay.Size = UDim2.new(1, 0, 1, 0)
+BgOverlay.Position = UDim2.new(0, 0, 0, 0)
+BgOverlay.BackgroundColor3 = Color3.fromRGB(10, 11, 15)
+BgOverlay.BackgroundTransparency = 0.45
+BgOverlay.BorderSizePixel = 0
+BgOverlay.ZIndex = 1
+BgOverlay.Parent = MainFrame
+
 local MainStroke = Instance.new("UIStroke")
 MainStroke.Thickness = 2.5
 MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 MainStroke.Parent = MainFrame
 
--- Título: FAMILY LOADER + pequeño by heaven
+-- Encabezado: FAMILY HUD + subtítulo
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Name = "Title"
-TitleLabel.Size = UDim2.new(1, -55, 0, 24)
-TitleLabel.Position = UDim2.new(0, 16, 0, 8)
+TitleLabel.Size = UDim2.new(1, -80, 0, 28)
+TitleLabel.Position = UDim2.new(0, 22, 0, 14)
 TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "FAMILY LOADER"
+TitleLabel.Text = "FAMILY HUD"
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.TextSize = 18
+TitleLabel.Font = Enum.Font.GothamBlack
+TitleLabel.TextSize = 22
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.ZIndex = 2
 TitleLabel.Parent = MainFrame
 
-local AuthorLabel = Instance.new("TextLabel")
-AuthorLabel.Name = "Author"
-AuthorLabel.Size = UDim2.new(1, -55, 0, 14)
-AuthorLabel.Position = UDim2.new(0, 17, 0, 30)
-AuthorLabel.BackgroundTransparency = 1
-AuthorLabel.Text = "by heaven"
-AuthorLabel.TextColor3 = Color3.fromRGB(165, 165, 180)
-AuthorLabel.Font = Enum.Font.GothamMedium
-AuthorLabel.TextSize = 10
-AuthorLabel.TextXAlignment = Enum.TextXAlignment.Left
-AuthorLabel.Parent = MainFrame
+local SubTitleLabel = Instance.new("TextLabel")
+SubTitleLabel.Name = "SubTitle"
+SubTitleLabel.Size = UDim2.new(1, -80, 0, 16)
+SubTitleLabel.Position = UDim2.new(0, 23, 0, 40)
+SubTitleLabel.BackgroundTransparency = 1
+SubTitleLabel.Text = "OFFICIAL SCRIPT LAUNCHER"
+SubTitleLabel.TextColor3 = Color3.fromRGB(165, 170, 185)
+SubTitleLabel.Font = Enum.Font.GothamBold
+SubTitleLabel.TextSize = 10
+SubTitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+SubTitleLabel.ZIndex = 2
+SubTitleLabel.Parent = MainFrame
 
 -- Botón Cerrar (X) redondeado
 local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseBtn"
 CloseButton.Size = UDim2.new(0, 28, 0, 28)
-CloseButton.Position = UDim2.new(1, -40, 0, 12)
-CloseButton.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+CloseButton.Position = UDim2.new(1, -46, 0, 16)
+CloseButton.BackgroundColor3 = Color3.fromRGB(24, 26, 33)
+CloseButton.BackgroundTransparency = 0.15
 CloseButton.Text = "X"
 CloseButton.TextColor3 = Color3.fromRGB(235, 85, 85)
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.TextSize = 14
+CloseButton.ZIndex = 2
 CloseButton.Parent = MainFrame
 
 local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(1, 0) -- Completamente redondo
+CloseCorner.CornerRadius = UDim.new(1, 0)
 CloseCorner.Parent = CloseButton
 
 CloseButton.MouseButton1Click:Connect(function()
 	ScreenGui:Destroy()
 end)
 
--- Contenedor de información del juego detectado
-local InfoFrame = Instance.new("Frame")
-InfoFrame.Name = "InfoFrame"
-InfoFrame.Size = UDim2.new(1, -30, 0, 76)
-InfoFrame.Position = UDim2.new(0, 15, 0, 54)
-InfoFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 33)
-InfoFrame.BorderSizePixel = 0
-InfoFrame.Parent = MainFrame
+-- Panel Izquierdo (Pestañas DEVELOPERS / CAMBIOS RECIENTES)
+local LeftPanel = Instance.new("Frame")
+LeftPanel.Name = "LeftPanel"
+LeftPanel.Size = UDim2.new(0, 275, 0, 185)
+LeftPanel.Position = UDim2.new(0, 22, 0, 68)
+LeftPanel.BackgroundColor3 = Color3.fromRGB(17, 18, 24)
+LeftPanel.BackgroundTransparency = 0.25
+LeftPanel.BorderSizePixel = 0
+LeftPanel.ZIndex = 2
+LeftPanel.Parent = MainFrame
 
-local InfoCorner = Instance.new("UICorner")
-InfoCorner.CornerRadius = UDim.new(0, 14)
-InfoCorner.Parent = InfoFrame
+local LeftCorner = Instance.new("UICorner")
+LeftCorner.CornerRadius = UDim.new(0, 14)
+LeftCorner.Parent = LeftPanel
 
-local GameLabel = Instance.new("TextLabel")
-GameLabel.Size = UDim2.new(1, -18, 0, 36)
-GameLabel.Position = UDim2.new(0, 10, 0, 7)
-GameLabel.BackgroundTransparency = 1
-GameLabel.Text = "Juego detectado:\n" .. DetectedGameName
-GameLabel.TextColor3 = Color3.fromRGB(210, 210, 220)
-GameLabel.Font = Enum.Font.GothamMedium
-GameLabel.TextSize = 12
-GameLabel.TextWrapped = true
-GameLabel.TextXAlignment = Enum.TextXAlignment.Left
-GameLabel.TextYAlignment = Enum.TextYAlignment.Top
-GameLabel.Parent = InfoFrame
+local LeftStroke = Instance.new("UIStroke")
+LeftStroke.Thickness = 1.6
+LeftStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+LeftStroke.Parent = LeftPanel
 
-local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Size = UDim2.new(1, -18, 0, 20)
-StatusLabel.Position = UDim2.new(0, 10, 1, -25)
-StatusLabel.BackgroundTransparency = 1
-StatusLabel.Font = Enum.Font.GothamBold
-StatusLabel.TextSize = 12
-StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
-StatusLabel.Parent = InfoFrame
+-- Pestaña DEVELOPERS
+local DevTabBtn = Instance.new("TextButton")
+DevTabBtn.Size = UDim2.new(0, 115, 0, 24)
+DevTabBtn.Position = UDim2.new(0, 14, 0, 10)
+DevTabBtn.BackgroundTransparency = 1
+DevTabBtn.Text = "DEVELOPERS"
+DevTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DevTabBtn.Font = Enum.Font.GothamBold
+DevTabBtn.TextSize = 11
+DevTabBtn.TextXAlignment = Enum.TextXAlignment.Left
+DevTabBtn.ZIndex = 3
+DevTabBtn.Parent = LeftPanel
+
+-- Pestaña CAMBIOS RECIENTES
+local ChangelogTabBtn = Instance.new("TextButton")
+ChangelogTabBtn.Size = UDim2.new(0, 125, 0, 24)
+ChangelogTabBtn.Position = UDim2.new(0, 132, 0, 10)
+ChangelogTabBtn.BackgroundTransparency = 1
+ChangelogTabBtn.Text = "CAMBIOS RECIENTES"
+ChangelogTabBtn.TextColor3 = Color3.fromRGB(145, 150, 165)
+ChangelogTabBtn.Font = Enum.Font.GothamBold
+ChangelogTabBtn.TextSize = 11
+ChangelogTabBtn.TextXAlignment = Enum.TextXAlignment.Left
+ChangelogTabBtn.ZIndex = 3
+ChangelogTabBtn.Parent = LeftPanel
+
+-- Contenedor de DEVELOPERS (solo heaven)
+local DevContainer = Instance.new("Frame")
+DevContainer.Size = UDim2.new(1, -24, 1, -44)
+DevContainer.Position = UDim2.new(0, 12, 0, 38)
+DevContainer.BackgroundTransparency = 1
+DevContainer.Visible = true
+DevContainer.ZIndex = 3
+DevContainer.Parent = LeftPanel
+
+local DevCard = Instance.new("Frame")
+DevCard.Size = UDim2.new(1, 0, 0, 66)
+DevCard.Position = UDim2.new(0, 0, 0, 8)
+DevCard.BackgroundColor3 = Color3.fromRGB(22, 24, 32)
+DevCard.BackgroundTransparency = 0.2
+DevCard.BorderSizePixel = 0
+DevCard.ZIndex = 3
+DevCard.Parent = DevContainer
+
+local DevCardCorner = Instance.new("UICorner")
+DevCardCorner.CornerRadius = UDim.new(0, 12)
+DevCardCorner.Parent = DevCard
+
+local DevCardStroke = Instance.new("UIStroke")
+DevCardStroke.Thickness = 1.4
+DevCardStroke.Color = Color3.fromRGB(65, 70, 88)
+DevCardStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+DevCardStroke.Parent = DevCard
+
+local AvatarCircle = Instance.new("Frame")
+AvatarCircle.Size = UDim2.new(0, 44, 0, 44)
+AvatarCircle.Position = UDim2.new(0, 12, 0.5, -22)
+AvatarCircle.BackgroundColor3 = Color3.fromRGB(36, 40, 54)
+AvatarCircle.BorderSizePixel = 0
+AvatarCircle.ZIndex = 4
+AvatarCircle.Parent = DevCard
+
+local AvatarCorner = Instance.new("UICorner")
+AvatarCorner.CornerRadius = UDim.new(1, 0)
+AvatarCorner.Parent = AvatarCircle
+
+local AvatarInitial = Instance.new("TextLabel")
+AvatarInitial.Size = UDim2.new(1, 0, 1, 0)
+AvatarInitial.BackgroundTransparency = 1
+AvatarInitial.Text = "H"
+AvatarInitial.TextColor3 = Color3.fromRGB(255, 255, 255)
+AvatarInitial.Font = Enum.Font.GothamBlack
+AvatarInitial.TextSize = 18
+AvatarInitial.ZIndex = 5
+AvatarInitial.Parent = AvatarCircle
+
+local DevNameLabel = Instance.new("TextLabel")
+DevNameLabel.Size = UDim2.new(1, -72, 0, 22)
+DevNameLabel.Position = UDim2.new(0, 66, 0, 12)
+DevNameLabel.BackgroundTransparency = 1
+DevNameLabel.Text = "heaven"
+DevNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+DevNameLabel.Font = Enum.Font.GothamBold
+DevNameLabel.TextSize = 15
+DevNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+DevNameLabel.ZIndex = 4
+DevNameLabel.Parent = DevCard
+
+local DevRoleLabel = Instance.new("TextLabel")
+DevRoleLabel.Size = UDim2.new(1, -72, 0, 18)
+DevRoleLabel.Position = UDim2.new(0, 66, 0, 34)
+DevRoleLabel.BackgroundTransparency = 1
+DevRoleLabel.Text = "LEAD DEVELOPER"
+DevRoleLabel.TextColor3 = Color3.fromRGB(160, 165, 182)
+DevRoleLabel.Font = Enum.Font.GothamBold
+DevRoleLabel.TextSize = 10
+DevRoleLabel.TextXAlignment = Enum.TextXAlignment.Left
+DevRoleLabel.ZIndex = 4
+DevRoleLabel.Parent = DevCard
+
+-- Info de juego detectado debajo de la tarjeta en DEVELOPERS
+local DetectedInfoLabel = Instance.new("TextLabel")
+DetectedInfoLabel.Size = UDim2.new(1, 0, 0, 34)
+DetectedInfoLabel.Position = UDim2.new(0, 0, 1, -36)
+DetectedInfoLabel.BackgroundTransparency = 1
+DetectedInfoLabel.TextWrapped = true
+DetectedInfoLabel.Font = Enum.Font.GothamMedium
+DetectedInfoLabel.TextSize = 11
+DetectedInfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+DetectedInfoLabel.TextYAlignment = Enum.TextYAlignment.Top
+DetectedInfoLabel.ZIndex = 4
+DetectedInfoLabel.Parent = DevContainer
 
 if SelectedGameData then
-	StatusLabel.Text = "Estado: " .. SelectedGameData.Name .. " listo"
-	StatusLabel.TextColor3 = Color3.fromRGB(80, 230, 120)
+	DetectedInfoLabel.Text = "Juego: " .. DetectedGameName .. "\nScript listo: " .. SelectedGameData.Name
+	DetectedInfoLabel.TextColor3 = Color3.fromRGB(115, 235, 150)
 else
-	StatusLabel.Text = "Estado: Sin script asignado (ID: " .. tostring(CurrentPlaceId) .. ")"
-	StatusLabel.TextColor3 = Color3.fromRGB(240, 180, 70)
+	DetectedInfoLabel.Text = "Juego: " .. DetectedGameName .. "\nID: " .. tostring(CurrentPlaceId) .. " (Sin script)"
+	DetectedInfoLabel.TextColor3 = Color3.fromRGB(245, 195, 95)
 end
 
--- Botón LAUNCH verde con esquinas redondeadas y borde rainbow
-local LaunchNormalColor = Color3.fromRGB(34, 165, 85)
-local LaunchHoverColor = Color3.fromRGB(45, 195, 102)
+-- Contenedor de CAMBIOS RECIENTES
+local ChangelogContainer = Instance.new("Frame")
+ChangelogContainer.Size = UDim2.new(1, -24, 1, -44)
+ChangelogContainer.Position = UDim2.new(0, 12, 0, 38)
+ChangelogContainer.BackgroundTransparency = 1
+ChangelogContainer.Visible = false
+ChangelogContainer.ZIndex = 3
+ChangelogContainer.Parent = LeftPanel
+
+local ChangelogText = Instance.new("TextLabel")
+ChangelogText.Size = UDim2.new(1, 0, 1, 0)
+ChangelogText.BackgroundTransparency = 1
+ChangelogText.Text = "• Auto-detección de juego activada\n• Soporte configurado para MM2\n• Soporte configurado para Entrenador 5v5\n• Interfaz Family Hud por heaven"
+ChangelogText.TextColor3 = Color3.fromRGB(220, 224, 235)
+ChangelogText.Font = Enum.Font.GothamMedium
+ChangelogText.TextSize = 12
+ChangelogText.TextWrapped = true
+ChangelogText.TextXAlignment = Enum.TextXAlignment.Left
+ChangelogText.TextYAlignment = Enum.TextYAlignment.Top
+ChangelogText.ZIndex = 4
+ChangelogText.Parent = ChangelogContainer
+
+DevTabBtn.MouseButton1Click:Connect(function()
+	DevContainer.Visible = true
+	ChangelogContainer.Visible = false
+	DevTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	ChangelogTabBtn.TextColor3 = Color3.fromRGB(145, 150, 165)
+end)
+
+ChangelogTabBtn.MouseButton1Click:Connect(function()
+	DevContainer.Visible = false
+	ChangelogContainer.Visible = true
+	ChangelogTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	DevTabBtn.TextColor3 = Color3.fromRGB(145, 150, 165)
+end)
+
+-- Columna Derecha: LINKS (Solo DISCORD.GG) y LAUNCH
+local LinksTitle = Instance.new("TextLabel")
+LinksTitle.Name = "LinksTitle"
+LinksTitle.Size = UDim2.new(0, 165, 0, 16)
+LinksTitle.Position = UDim2.new(0, 312, 0, 68)
+LinksTitle.BackgroundTransparency = 1
+LinksTitle.Text = "LINKS"
+LinksTitle.TextColor3 = Color3.fromRGB(165, 170, 185)
+LinksTitle.Font = Enum.Font.GothamBold
+LinksTitle.TextSize = 10
+LinksTitle.TextXAlignment = Enum.TextXAlignment.Left
+LinksTitle.ZIndex = 2
+LinksTitle.Parent = MainFrame
+
+-- Botón DISCORD.GG
+local DiscordButton = Instance.new("TextButton")
+DiscordButton.Name = "DiscordBtn"
+DiscordButton.Size = UDim2.new(0, 166, 0, 56)
+DiscordButton.Position = UDim2.new(0, 312, 0, 90)
+DiscordButton.BackgroundColor3 = Color3.fromRGB(22, 25, 38)
+DiscordButton.BackgroundTransparency = 0.15
+DiscordButton.Text = "  DISCORD.GG"
+DiscordButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+DiscordButton.Font = Enum.Font.GothamBold
+DiscordButton.TextSize = 14
+DiscordButton.AutoButtonColor = false
+DiscordButton.ZIndex = 2
+DiscordButton.Parent = MainFrame
+
+local DiscordCorner = Instance.new("UICorner")
+DiscordCorner.CornerRadius = UDim.new(0, 14)
+DiscordCorner.Parent = DiscordButton
+
+local DiscordStroke = Instance.new("UIStroke")
+DiscordStroke.Thickness = 2
+DiscordStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+DiscordStroke.Parent = DiscordButton
+
+DiscordButton.MouseEnter:Connect(function()
+	TweenService:Create(DiscordButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(32, 37, 56)}):Play()
+end)
+
+DiscordButton.MouseLeave:Connect(function()
+	TweenService:Create(DiscordButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(22, 25, 38)}):Play()
+end)
+
+DiscordButton.MouseButton1Click:Connect(function()
+	if setclipboard then
+		pcall(function()
+			setclipboard(DISCORD_INVITE)
+		end)
+	end
+	SendRayfieldNotification("Family Hud", "Discord copiado: " .. DISCORD_INVITE, 4)
+end)
+
+-- Botón LAUNCH (Verde y redondeado)
+local LaunchNormalColor = Color3.fromRGB(32, 160, 82)
+local LaunchHoverColor = Color3.fromRGB(42, 192, 98)
 
 local LaunchButton = Instance.new("TextButton")
 LaunchButton.Name = "LaunchBtn"
-LaunchButton.Size = UDim2.new(1, -30, 0, 44)
-LaunchButton.Position = UDim2.new(0, 15, 1, -58)
+LaunchButton.Size = UDim2.new(0, 166, 0, 62)
+LaunchButton.Position = UDim2.new(0, 312, 0, 191)
 LaunchButton.BackgroundColor3 = LaunchNormalColor
-LaunchButton.Text = "LAUNCH"
+LaunchButton.BackgroundTransparency = 0.1
+LaunchButton.Text = "▶  LAUNCH"
 LaunchButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 LaunchButton.Font = Enum.Font.GothamBlack
 LaunchButton.TextSize = 16
 LaunchButton.AutoButtonColor = false
+LaunchButton.ZIndex = 2
 LaunchButton.Parent = MainFrame
 
 local LaunchCorner = Instance.new("UICorner")
@@ -303,9 +525,30 @@ LaunchCorner.CornerRadius = UDim.new(0, 14)
 LaunchCorner.Parent = LaunchButton
 
 local LaunchStroke = Instance.new("UIStroke")
-LaunchStroke.Thickness = 2
+LaunchStroke.Thickness = 2.2
 LaunchStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 LaunchStroke.Parent = LaunchButton
+
+LaunchButton.MouseEnter:Connect(function()
+	TweenService:Create(LaunchButton, TweenInfo.new(0.2), {BackgroundColor3 = LaunchHoverColor}):Play()
+end)
+
+LaunchButton.MouseLeave:Connect(function()
+	TweenService:Create(LaunchButton, TweenInfo.new(0.2), {BackgroundColor3 = LaunchNormalColor}):Play()
+end)
+
+-- Pie de página
+local FooterLabel = Instance.new("TextLabel")
+FooterLabel.Size = UDim2.new(1, -44, 0, 16)
+FooterLabel.Position = UDim2.new(0, 22, 1, -24)
+FooterLabel.BackgroundTransparency = 1
+FooterLabel.Text = "FAMILY HUD  •  BY HEAVEN"
+FooterLabel.TextColor3 = Color3.fromRGB(165, 170, 185)
+FooterLabel.Font = Enum.Font.GothamBold
+FooterLabel.TextSize = 10
+FooterLabel.TextXAlignment = Enum.TextXAlignment.Center
+FooterLabel.ZIndex = 2
+FooterLabel.Parent = MainFrame
 
 -- ==========================================
 -- ANIMACIÓN BORDES RAINBOW
@@ -318,20 +561,18 @@ RainbowConnection = RunService.RenderStepped:Connect(function(deltaTime)
 		return
 	end
 	hue = (hue + deltaTime * 0.25) % 1
-	local mainColor = Color3.fromHSV(hue, 0.85, 1)
-	local buttonColor = Color3.fromHSV((hue + 0.15) % 1, 0.85, 1)
-
-	MainStroke.Color = mainColor
-	LaunchStroke.Color = buttonColor
+	MainStroke.Color = Color3.fromHSV(hue, 0.85, 1)
+	LeftStroke.Color = Color3.fromHSV((hue + 0.1) % 1, 0.85, 1)
+	DiscordStroke.Color = Color3.fromHSV((hue + 0.2) % 1, 0.85, 1)
+	LaunchStroke.Color = Color3.fromHSV((hue + 0.35) % 1, 0.85, 1)
 end)
 
-LaunchButton.MouseEnter:Connect(function()
-	TweenService:Create(LaunchButton, TweenInfo.new(0.2), {BackgroundColor3 = LaunchHoverColor}):Play()
-end)
-
-LaunchButton.MouseLeave:Connect(function()
-	TweenService:Create(LaunchButton, TweenInfo.new(0.2), {BackgroundColor3 = LaunchNormalColor}):Play()
-end)
+-- Notificación automática si el juego no está soportado
+if not SelectedGameData then
+	task.defer(function()
+		SendRayfieldNotification("Family Hud", "not suport game", 4)
+	end)
+end
 
 -- Lógica al presionar LAUNCH
 LaunchButton.MouseButton1Click:Connect(function()
@@ -341,9 +582,9 @@ LaunchButton.MouseButton1Click:Connect(function()
 		SelectedGameData.Execute()
 		ScreenGui:Destroy()
 	else
-		SendRayfieldNotification("Family Loader", "not suport game", 4)
+		SendRayfieldNotification("Family Hud", "not suport game", 4)
 		LaunchButton.Text = "NOT SUPORT GAME"
 		task.wait(1.2)
-		LaunchButton.Text = "LAUNCH"
+		LaunchButton.Text = "▶  LAUNCH"
 	end
 end)
